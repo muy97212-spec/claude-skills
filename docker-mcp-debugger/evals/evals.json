@@ -1,0 +1,26 @@
+{
+  "skill_name": "docker-mcp-debugger",
+  "evals": [
+    {
+      "id": 1,
+      "name": "obsidian-auth-40101",
+      "prompt": "I'm on a Mac, set up Obsidian in Docker MCP Toolkit last night by adding a custom catalog file because I couldn't find Obsidian in the catalog UI. Claude Desktop sees the docker-mcp gateway fine and the obsidian_* tools show up. But when I call obsidian_list_files_in_vault I get back: 'Error 40101: Authorization required. Find your API Key in the Local REST API & MCP Server section of your Obsidian settings.' Obsidian is running, the Local REST API plugin is enabled, and I copied the API key from the plugin's settings page. Here's my custom YAML at ~/.docker/mcp/catalogs/my-servers.yaml:\n\n```yaml\nname: my-servers\nservers:\n  obsidian:\n    image: mcp/obsidian:latest\n    config:\n      host: host.docker.internal\n      port: 27124\n```\n\nWhat's wrong and how do I fix it?",
+      "expected_output": "Should identify this as L5 auth failure (target service rejecting credential). Should point out that the YAML has no env: block at all — the OBSIDIAN_API_KEY is never being passed to the container. Should propose the fixed YAML with env: OBSIDIAN_API_KEY: <value> (and ideally mention OBSIDIAN_HOST also belongs in env, not under 'config:'). Should mention secrets pattern as the better long-term approach but not block on it. Should suggest verifying by re-calling list_files_in_vault.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "postgres-connection-refused",
+      "prompt": "Trying to wire up the mcp-postgres server through Docker MCP Toolkit. I have Postgres 16 running on my Mac, definitely listening — `lsof -iTCP:5432 -sTCP:LISTEN` shows postgres. I can connect from psql on the command line with `psql -h localhost -U me -d mydb`. But every MCP tool call returns 'ECONNREFUSED 127.0.0.1:5432'. My env in the MCP config has POSTGRES_HOST=localhost, POSTGRES_PORT=5432, POSTGRES_USER=me, POSTGRES_PASSWORD=correct-password, POSTGRES_DB=mydb. Why can the host see Postgres but the MCP server can't?",
+      "expected_output": "Should identify this as the classic L4 localhost-inside-container pitfall. Should explain that inside Docker, 'localhost' / '127.0.0.1' refers to the container, not the Mac host. Should propose changing POSTGRES_HOST to host.docker.internal. Should also flag a likely follow-up issue: Postgres by default binds only to 127.0.0.1, so even with host.docker.internal the user may need to edit postgresql.conf (listen_addresses = '*') and pg_hba.conf to accept connections from the Docker bridge subnet. Should suggest verifying by re-calling a tool after the change.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "tools-not-appearing-after-add",
+      "prompt": "I just added the GitHub MCP server through Docker MCP Toolkit's Catalog. It pulled the image, I filled in my GITHUB_PERSONAL_ACCESS_TOKEN, and the toolkit UI shows the server is enabled in my active profile. The docker-mcp gateway tools work in Claude Desktop — I can see other servers' tools. But there are no github_* tools showing up in Claude's tool list at all. I've checked the toolkit logs and the container started successfully. What am I missing?",
+      "expected_output": "Should recognize this as a stale-tool-list problem and the #1 likely cause is Claude Desktop wasn't restarted (tool lists are pulled at client start). Should tell the user to fully quit Claude Desktop (Cmd-Q, not just close window) and reopen. Should also mention that if restart doesn't bring them in, the next things to check are: (a) is the server registered in the active profile or a different one? (b) `docker ps -a` for the github container's actual state (sometimes 'started successfully' in toolkit logs is followed by a fast crash). Should suggest verifying by listing tools again after restart.",
+      "files": []
+    }
+  ]
+}
