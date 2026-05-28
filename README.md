@@ -4,7 +4,7 @@ My collection of [Claude Skills](https://docs.claude.com/en/docs/build-with-clau
 
 ## Skills
 
-### [docker-mcp-debugger](skills/docker-mcp-debugger/)
+### [docker-mcp-debugger](docker-mcp-debugger/)
 
 Diagnose and fix Docker-based MCP servers that aren't working — tools missing from Claude, 401/40101 auth errors, `Network is unreachable`/ENETUNREACH from the container, self-signed cert failures, Secrets that look filled in Docker MCP Toolkit's UI but aren't actually saved, and other common breakage patterns.
 
